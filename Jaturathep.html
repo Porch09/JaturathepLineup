@@ -6,132 +6,128 @@
 <title>Jaturathep Lineup</title>
 
 <style>
-body{font-family:Arial;background:#f4f4f4;padding:20px}
-.container{max-width:600px;margin:auto;background:#fff;padding:20px;border-radius:8px}
-table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #ccc;padding:6px;text-align:center}
-.add-btn{background:#4caf50;color:#fff;border:none}
-.delete-btn{background:#f44336;color:#fff;border:none}
-#editArea,#passwordModal{display:none}
-#passwordModal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center}
-.box{background:#fff;padding:20px;border-radius:6px}
+body{
+  font-family: Arial, sans-serif;
+  background:#f2f2f2;
+  padding:20px;
+}
+.container{
+  max-width:600px;
+  margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:8px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td{
+  border:1px solid #ccc;
+  padding:8px;
+  text-align:center;
+}
+button{
+  padding:5px 10px;
+  margin:2px;
+  cursor:pointer;
+}
+.add{background:#4caf50;color:#fff;border:none}
+.del{background:#f44336;color:#fff;border:none}
+#editArea{display:none;margin-top:10px}
 </style>
 </head>
 
 <body>
 <div class="container">
-<h1>Jaturathep</h1>
+  <h1>Jaturathep</h1>
 
-<button id="editModeBtn" onclick="openModal()">เข้าสู่โหมดแก้ไข</button>
-<button id="resetBtn" onclick="resetAll()" style="display:none">รีเซ็ต</button>
+  <button onclick="enterEdit()">เข้าสู่โหมดแก้ไข</button>
+  <button onclick="resetAll()">รีเซ็ต</button>
 
-<div id="editArea">
-  <input id="nameInput" placeholder="ชื่อสมาชิก">
-  <button onclick="addMember()">เพิ่ม</button>
-  <button onclick="saveAndExit()">บันทึก & ออก</button>
-</div>
-
-<div id="counter"></div>
-
-<table>
-<thead><tr><th>ชื่อ</th><th>จำนวน</th><th>จัดการ</th></tr></thead>
-<tbody id="tableBody"></tbody>
-</table>
-</div>
-
-<div id="passwordModal">
-  <div class="box">
-    <h3>ใส่รหัสผ่าน</h3>
-    <input id="passwordInput" type="password">
-    <button onclick="confirmPassword()">ตกลง</button>
-    <div id="errorMsg" style="color:red"></div>
+  <div id="editArea">
+    <input id="nameInput" placeholder="ชื่อสมาชิก">
+    <button onclick="addMember()">เพิ่มสมาชิก</button>
   </div>
+
+  <div id="counter"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ชื่อ</th>
+        <th>จำนวน</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
 </div>
 
-<!-- ✅ script ต้องอยู่ท้าย body -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, set, onValue }
-  from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+<script>
+let members = [];
+let editMode = false;
+const maxMembers = 30;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDsM9ByXHwfxhAG8lBfRKiHSGuxwSiAdls",
-  authDomain: "jaturathep-55793.firebaseapp.com",
-  databaseURL: "https://jaturathep-55793-default-rtdb.firebaseio.com",
-  projectId: "jaturathep-55793",
-  storageBucket: "jaturathep-55793.firebasestorage.app",
-  messagingSenderId: "681766321980",
-  appId: "1:681766321980:web:cea8b2eee2e3196f10e839"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const dataRef = ref(db,"members");
-
-const PASSWORD="jtrt99", maxMembers=30;
-let members=[], editMode=false;
-
-const tableBody=document.getElementById("tableBody");
-const counter=document.getElementById("counter");
-const editArea=document.getElementById("editArea");
-const resetBtn=document.getElementById("resetBtn");
-const editModeBtn=document.getElementById("editModeBtn");
-const passwordModal=document.getElementById("passwordModal");
-const passwordInput=document.getElementById("passwordInput");
-const errorMsg=document.getElementById("errorMsg");
-const nameInput=document.getElementById("nameInput");
-
-onValue(dataRef,s=>{
-  members=s.val()||[];
-  render();
-});
-
-function saveData(){ if(editMode) set(dataRef,members); }
+const list = document.getElementById("list");
+const counter = document.getElementById("counter");
+const editArea = document.getElementById("editArea");
+const nameInput = document.getElementById("nameInput");
 
 function render(){
-  tableBody.innerHTML="";
+  list.innerHTML = "";
   members.forEach((m,i)=>{
-    tableBody.innerHTML+=`
-    <tr>
-      <td>${m.name}</td>
-      <td>${m.count}</td>
-      <td>${editMode?`
-        <button class="add-btn" onclick="addCount(${i})">+</button>
-        <button class="delete-btn" onclick="removeMember(${i})">ลบ</button>`:"-"}</td>
-    </tr>`;
+    list.innerHTML += `
+      <tr>
+        <td>${m.name}</td>
+        <td>${m.count}</td>
+        <td>
+          ${editMode ? `
+            <button class="add" onclick="addCount(${i})">+</button>
+            <button class="del" onclick="removeMember(${i})">ลบ</button>
+          ` : "-"}
+        </td>
+      </tr>`;
   });
-  counter.innerText=`สมาชิก ${members.length}/${maxMembers}`;
+  counter.innerText = "สมาชิก " + members.length + " / " + maxMembers;
 }
 
-window.openModal=()=>passwordModal.style.display="flex";
-window.confirmPassword=()=>{
-  if(passwordInput.value===PASSWORD){
-    editMode=true;
-    passwordModal.style.display="none";
-    updateEditUI();
-  }else errorMsg.innerText="รหัสผ่านไม่ถูกต้อง";
-};
+function enterEdit(){
+  const pass = prompt("ใส่รหัสผ่าน");
+  if(pass === "jtrt99"){
+    editMode = true;
+    editArea.style.display = "block";
+    render();
+  }else{
+    alert("รหัสผ่านไม่ถูกต้อง");
+  }
+}
 
-window.updateEditUI=()=>{
-  editArea.style.display=editMode?"block":"none";
-  resetBtn.style.display=editMode?"inline-block":"none";
-  editModeBtn.style.display=editMode?"none":"inline-block";
-  render();
-};
-
-window.addMember=()=>{
-  if(!nameInput.value||members.length>=maxMembers)return;
+function addMember(){
+  if(!nameInput.value || members.length >= maxMembers) return;
   members.push({name:nameInput.value,count:0});
-  nameInput.value="";
-  saveData();
-};
+  nameInput.value = "";
+  render();
+}
 
-window.removeMember=i=>{members.splice(i,1);saveData();};
-window.addCount=i=>{members[i].count++;saveData();};
-window.resetAll=()=>{members.forEach(m=>m.count=0);saveData();};
-window.saveAndExit=()=>{editMode=false;updateEditUI();};
+function removeMember(i){
+  members.splice(i,1);
+  render();
+}
 
-updateEditUI();
+function addCount(i){
+  members[i].count++;
+  render();
+}
+
+function resetAll(){
+  if(!confirm("รีเซ็ตทั้งหมด?")) return;
+  members.forEach(m=>m.count=0);
+  render();
+}
+
+render();
 </script>
 </body>
 </html>
