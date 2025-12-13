@@ -28,6 +28,8 @@ h1 { text-align: center; }
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
+  gap: 10px;
+  align-items: center;
 }
 button {
   padding: 8px 12px;
@@ -103,9 +105,10 @@ input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, set, onValue } 
+  from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-// ================= Firebase Config =================
+/* ===== Firebase Config ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyDsM9ByXHwfxhAG8lBfRKiHSGuxwSiAdls",
   authDomain: "jaturathep-55793.firebaseapp.com",
@@ -116,34 +119,40 @@ const firebaseConfig = {
   appId: "1:681766321980:web:cea8b2eee2e3196f10e839"
 };
 
-// ================= Init Firebase =================
+/* ===== Init Firebase ===== */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dataRef = ref(db, "members");
 
-// ================= App State =================
+/* ===== State ===== */
 const PASSWORD = "jtrt99";
 const maxMembers = 30;
 let members = [];
 let editMode = false;
 
-// ================= Realtime Load =================
+/* ===== Sort ===== */
+function sortMembers() {
+  members.sort((a, b) => b.count - a.count);
+}
+
+/* ===== Realtime Load ===== */
 onValue(dataRef, (snapshot) => {
   members = snapshot.val() || [];
+  sortMembers();
   render();
 });
 
-// ================= Functions =================
+/* ===== Save ===== */
 window.saveData = function () {
   if (!editMode) return;
+  sortMembers();
   set(dataRef, members);
 };
 
-window.openModal = function () {
-  passwordModal.style.display = "flex";
-};
+/* ===== UI Controls ===== */
+window.openModal = () => passwordModal.style.display = "flex";
 
-window.confirmPassword = function () {
+window.confirmPassword = () => {
   if (passwordInput.value === PASSWORD) {
     editMode = true;
     sessionStorage.setItem("editMode", "true");
@@ -155,14 +164,15 @@ window.confirmPassword = function () {
   }
 };
 
-window.updateEditUI = function () {
+window.updateEditUI = () => {
   editArea.style.display = editMode ? "flex" : "none";
   resetBtn.style.display = editMode ? "inline-block" : "none";
   editModeBtn.style.display = editMode ? "none" : "inline-block";
   render();
 };
 
-window.addMember = function () {
+/* ===== Actions ===== */
+window.addMember = () => {
   const name = nameInput.value.trim();
   if (!name || members.length >= maxMembers) return;
   members.push({ name, count: 0 });
@@ -170,49 +180,53 @@ window.addMember = function () {
   saveData();
 };
 
-window.removeMember = function (i) {
+window.removeMember = (i) => {
   members.splice(i, 1);
   saveData();
 };
 
-window.addCount = function (i) {
+window.addCount = (i) => {
   members[i].count++;
   saveData();
 };
 
-window.resetAll = function () {
+window.resetAll = () => {
   if (!confirm("รีเซ็ตทั้งหมด?")) return;
   members.forEach(m => m.count = 0);
   saveData();
 };
 
-window.saveAndExit = function () {
+window.saveAndExit = () => {
   saveData();
   editMode = false;
   sessionStorage.removeItem("editMode");
   updateEditUI();
 };
 
+/* ===== Render ===== */
 function render() {
+  sortMembers();
   tableBody.innerHTML = "";
   members.forEach((m, i) => {
     tableBody.innerHTML += `
       <tr>
         <td>${m.name}</td>
         <td>${m.count}</td>
-        <td>${editMode
-          ? `<button class='add-btn' onclick='addCount(${i})'>+</button> <button class='delete-btn' onclick='removeMember(${i})'>ลบ</button>`
-          : "-"}</td>
+        <td>
+          ${editMode
+            ? `<button class="add-btn" onclick="addCount(${i})">+</button>
+               <button class="delete-btn" onclick="removeMember(${i})">ลบ</button>`
+            : "-"}
+        </td>
       </tr>`;
   });
   counter.innerText = `สมาชิก ${members.length} / ${maxMembers}`;
 }
 
-// ================= Init =================
+/* ===== Init ===== */
 editMode = sessionStorage.getItem("editMode") === "true";
 updateEditUI();
 </script>
 
 </body>
 </html>
-
