@@ -2,105 +2,110 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Jaturathep Lineup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background:#f4f4f4;
-    margin:0;
-    padding:20px;
-  }
-  .container {
-    max-width:600px;
-    margin:auto;
-    background:#fff;
-    padding:20px;
-    border-radius:8px;
-  }
-  h1 { text-align:center; }
-  table {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-  }
-  th, td {
-    border:1px solid #ccc;
-    padding:8px;
-    text-align:center;
-  }
-  button {
-    padding:5px 10px;
-    margin:2px;
-    cursor:pointer;
-  }
-  .add-btn { background:#4caf50; color:#fff; border:none; }
-  .delete-btn { background:#f44336; color:#fff; border:none; }
-  #editArea { display:none; margin-top:10px; }
-  #passwordModal {
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.5);
-    justify-content:center;
-    align-items:center;
-  }
-  #passwordModal .box {
-    background:#fff;
-    padding:20px;
-    border-radius:6px;
-    width:250px;
-  }
-  #errorMsg { color:red; font-size:14px; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #74ebd5, #acb6e5);
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 720px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+h1 { text-align: center; }
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.edit-btn { background: #ffb703; }
+.add-btn { background: #2a9d8f; color: white; }
+.delete-btn { background: #e63946; color: white; }
+.reset-btn { background: #e63946; color: white; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px; text-align: center; border-bottom: 1px solid #ddd; }
+th { background: #f1f1f1; }
+
+.edit-area { display: none; margin-top: 10px; gap: 5px; }
+input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+.error { color: red; }
 </style>
 </head>
-
 <body>
+
 <div class="container">
   <h1>Jaturathep</h1>
 
-  <button id="editModeBtn" onclick="openModal()">เข้าสู่โหมดแก้ไข</button>
-  <button id="resetBtn" onclick="resetAll()" style="display:none;">รีเซ็ต</button>
-
-  <div id="editArea">
-    <input id="nameInput" placeholder="ชื่อสมาชิก"/>
-    <button onclick="addMember()">เพิ่ม</button>
-    <button onclick="saveAndExit()">บันทึก & ออก</button>
+  <div class="top-bar">
+    <div id="counter">สมาชิก 0 / 30</div>
+    <button class="edit-btn" id="editModeBtn" onclick="openModal()">เข้าสู่โหมดแก้ไข</button>
+    <button class="reset-btn" id="resetBtn" onclick="resetAll()" style="display:none">รีเซ็ต</button>
   </div>
-
-  <div id="counter"></div>
 
   <table>
     <thead>
       <tr>
         <th>ชื่อ</th>
-        <th>จำนวน</th>
+        <th>จำนวนไม้</th>
         <th>จัดการ</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
+
+  <div class="edit-area" id="editArea">
+    <input id="nameInput" placeholder="กรอกชื่อ" />
+    <button class="add-btn" onclick="addMember()">เพิ่ม</button>
+    <button class="add-btn" onclick="saveAndExit()">บันทึก</button>
+  </div>
 </div>
 
-<!-- modal -->
-<div id="passwordModal">
-  <div class="box">
+<div class="modal" id="passwordModal">
+  <div class="modal-content">
     <h3>ใส่รหัสผ่าน</h3>
-    <input id="passwordInput" type="password"/>
-    <button onclick="confirmPassword()">ตกลง</button>
-    <div id="errorMsg"></div>
+    <input type="password" id="passwordInput" />
+    <div class="error" id="errorMsg"></div>
+    <button class="add-btn" onclick="confirmPassword()">ยืนยัน</button>
   </div>
 </div>
 
 <script type="module">
-document.addEventListener("DOMContentLoaded", () => {
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } 
-  from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-/* Firebase config */
+// ================= Firebase Config =================
 const firebaseConfig = {
   apiKey: "AIzaSyDsM9ByXHwfxhAG8lBfRKiHSGuxwSiAdls",
   authDomain: "jaturathep-55793.firebaseapp.com",
@@ -111,65 +116,37 @@ const firebaseConfig = {
   appId: "1:681766321980:web:cea8b2eee2e3196f10e839"
 };
 
+// ================= Init Firebase =================
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dataRef = ref(db, "members");
 
-/* ตัวแปร */
+// ================= App State =================
 const PASSWORD = "jtrt99";
 const maxMembers = 30;
-
 let members = [];
 let editMode = false;
 
-/* DOM */
-const tableBody = document.getElementById("tableBody");
-const counter = document.getElementById("counter");
-const editArea = document.getElementById("editArea");
-const resetBtn = document.getElementById("resetBtn");
-const editModeBtn = document.getElementById("editModeBtn");
-const passwordModal = document.getElementById("passwordModal");
-const passwordInput = document.getElementById("passwordInput");
-const errorMsg = document.getElementById("errorMsg");
-const nameInput = document.getElementById("nameInput");
-
-/* โหลดข้อมูล realtime */
-onValue(dataRef, snap => {
-  members = snap.val() || [];
+// ================= Realtime Load =================
+onValue(dataRef, (snapshot) => {
+  members = snapshot.val() || [];
   render();
 });
 
-/* ฟังก์ชัน */
-function saveData() {
+// ================= Functions =================
+window.saveData = function () {
   if (!editMode) return;
   set(dataRef, members);
-}
+};
 
-function render() {
-  tableBody.innerHTML = "";
-  members.forEach((m,i) => {
-    tableBody.innerHTML += `
-      <tr>
-        <td>${m.name}</td>
-        <td>${m.count}</td>
-        <td>
-          ${editMode
-            ? `<button class="add-btn" onclick="addCount(${i})">+</button>
-               <button class="delete-btn" onclick="removeMember(${i})">ลบ</button>`
-            : "-"}
-        </td>
-      </tr>`;
-  });
-  counter.innerText = `สมาชิก ${members.length} / ${maxMembers}`;
-}
+window.openModal = function () {
+  passwordModal.style.display = "flex";
+};
 
-/* expose ให้ HTML */
-window.openModal = () => passwordModal.style.display = "flex";
-
-window.confirmPassword = () => {
+window.confirmPassword = function () {
   if (passwordInput.value === PASSWORD) {
     editMode = true;
-    sessionStorage.setItem("editMode","true");
+    sessionStorage.setItem("editMode", "true");
     passwordModal.style.display = "none";
     errorMsg.innerText = "";
     updateEditUI();
@@ -178,49 +155,63 @@ window.confirmPassword = () => {
   }
 };
 
-window.updateEditUI = () => {
-  editArea.style.display = editMode ? "block" : "none";
+window.updateEditUI = function () {
+  editArea.style.display = editMode ? "flex" : "none";
   resetBtn.style.display = editMode ? "inline-block" : "none";
   editModeBtn.style.display = editMode ? "none" : "inline-block";
   render();
 };
 
-window.addMember = () => {
+window.addMember = function () {
   const name = nameInput.value.trim();
   if (!name || members.length >= maxMembers) return;
-  members.push({ name, count:0 });
+  members.push({ name, count: 0 });
   nameInput.value = "";
   saveData();
 };
 
-window.removeMember = i => {
-  members.splice(i,1);
+window.removeMember = function (i) {
+  members.splice(i, 1);
   saveData();
 };
 
-window.addCount = i => {
+window.addCount = function (i) {
   members[i].count++;
   saveData();
 };
 
-window.resetAll = () => {
+window.resetAll = function () {
   if (!confirm("รีเซ็ตทั้งหมด?")) return;
   members.forEach(m => m.count = 0);
   saveData();
 };
 
-window.saveAndExit = () => {
+window.saveAndExit = function () {
   saveData();
   editMode = false;
   sessionStorage.removeItem("editMode");
   updateEditUI();
 };
 
-/* init */
+function render() {
+  tableBody.innerHTML = "";
+  members.forEach((m, i) => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${m.name}</td>
+        <td>${m.count}</td>
+        <td>${editMode
+          ? `<button class='add-btn' onclick='addCount(${i})'>+</button> <button class='delete-btn' onclick='removeMember(${i})'>ลบ</button>`
+          : "-"}</td>
+      </tr>`;
+  });
+  counter.innerText = `สมาชิก ${members.length} / ${maxMembers}`;
+}
+
+// ================= Init =================
 editMode = sessionStorage.getItem("editMode") === "true";
 updateEditUI();
-
-});
 </script>
+
 </body>
 </html>
