@@ -54,10 +54,15 @@ tr:not(:last-child) td{border-bottom:1px solid rgba(255,255,255,.15);}
       <div class="badge">สมาชิก <span id="count">0</span> / 30</div>
     </header>
 
-    <div class="controls">
+    <div class="controls" id="editControls" style="display:none;">
       <input id="nameInput" placeholder="เพิ่มชื่อสมาชิก..." />
       <button class="primary" onclick="addMember()">เพิ่ม</button>
       <button class="danger" onclick="resetAll()">รีเซ็ต</button>
+      <button class="ghost" onclick="saveAndExit()">บันทึก</button>
+    </div>
+
+    <div class="controls" id="viewControls">
+      <button class="primary" onclick="enterEditMode()">แก้ไข</button>
     </div>
 
     <table>
@@ -97,16 +102,9 @@ tr:not(:last-child) td{border-bottom:1px solid rgba(255,255,255,.15);}
   // ===== Owner Password Config =====
 const OWNER_PASSWORD = "1234"; // 🔐 เปลี่ยนรหัสตรงนี้
 
+// ใช้วิธีที่ 2: ขอรหัสผ่านเมื่อกดปุ่มเท่านั้น (ไม่ใช้ #admin)
 let isOwner = false;
-if (location.hash === "#admin") {
-  const input = prompt("กรอกรหัสผ่าน Owner:");
-  if (input === OWNER_PASSWORD) {
-    isOwner = true;
-  } else {
-    alert("รหัสผ่านไม่ถูกต้อง");
-    location.hash = "";
-  }
-}
+let isEditing = false;
 
   const list = document.getElementById("list");
   const countEl = document.getElementById("count");
@@ -120,7 +118,7 @@ if (location.hash === "#admin") {
           <td>${m.name}</td>
           <td>${m.count}</td>
           <td class="actions">
-            ${isOwner ? `
+            ${isEditing ? `
               <button class="ghost add" data-i="${i}">+</button>
               <button class="ghost del" data-i="${i}">ลบ</button>
             ` : "ดูอย่างเดียว"}
@@ -143,8 +141,27 @@ if (location.hash === "#admin") {
     render(snap.val() || []);
   });
 
+  window.enterEditMode = async function(){
+    const input = prompt("กรอกรหัสผ่าน Owner:");
+    if(input !== OWNER_PASSWORD) return alert("รหัสผ่านไม่ถูกต้อง");
+    isOwner = true;
+    isEditing = true;
+    document.getElementById("editControls").style.display = "flex";
+    document.getElementById("viewControls").style.display = "none";
+    const current = (await get(dbRef)).val() || [];
+    render(current);
+  }
+
+  window.saveAndExit = function(){
+    isEditing = false;
+    document.getElementById("editControls").style.display = "none";
+    document.getElementById("viewControls").style.display = "flex";
+    alert("บันทึกเรียบร้อย");
+  }
+
   window.addMember = async function(){
-    if(!isOwner) return alert("โหมดดูอย่างเดียว");
+    if(!isEditing) return;
+
     const name = nameInput.value.trim();
     if(!name) return;
 
@@ -152,12 +169,21 @@ if (location.hash === "#admin") {
     const data = snap.val() || [];
     if(data.length >= maxMembers) return alert("ครบ 30 คนแล้ว");
 
-    data.push({name, count:0});
+    data.push({ name, count: 0 });
     await set(dbRef, data);
+
     nameInput.value = "";
+    render(data); // 🔧 render ทันทีหลังเพิ่ม
   }
 
   async function addCount(i){
+    if(!isOwner){
+      const input = prompt("กรอกรหัสผ่าน Owner:");
+      if(input !== OWNER_PASSWORD) return alert("รหัสผ่านไม่ถูกต้อง");
+      isOwner = true;
+      const current = (await get(dbRef)).val() || [];
+      render(current);
+    }
     const snap = await get(dbRef);
     const data = snap.val();
     if(!data || !data[i]) return;
@@ -166,6 +192,13 @@ if (location.hash === "#admin") {
   }
 
   async function removeMember(i){
+    if(!isOwner){
+      const input = prompt("กรอกรหัสผ่าน Owner:");
+      if(input !== OWNER_PASSWORD) return alert("รหัสผ่านไม่ถูกต้อง");
+      isOwner = true;
+      const current = (await get(dbRef)).val() || [];
+      render(current);
+    }
     const snap = await get(dbRef);
     const data = snap.val();
     if(!data) return;
@@ -174,6 +207,13 @@ if (location.hash === "#admin") {
   }
 
   window.resetAll = async function(){
+    if(!isOwner){
+      const input = prompt("กรอกรหัสผ่าน Owner:");
+      if(input !== OWNER_PASSWORD) return alert("รหัสผ่านไม่ถูกต้อง");
+      isOwner = true;
+      const current = (await get(dbRef)).val() || [];
+      render(current);
+    }
     if(!isOwner) return;
     if(!confirm("รีเซ็ตทั้งหมด?")) return;
     const snap = await get(dbRef);
