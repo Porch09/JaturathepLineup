@@ -129,61 +129,64 @@ onValue(dataRef, (snapshot) => {
   render();
 });
 
-window.saveData = function () {
+function saveData() {
   if (!editMode) return;
   set(dataRef, members);
-};
+}
 
-window.openModal = function () {
+function openModal() {
   passwordModal.style.display = "flex";
-};
+}
 
-window.confirmPassword = function () {
+function confirmPassword() {
   if (passwordInput.value === PASSWORD) {
     editMode = true;
     sessionStorage.setItem("editMode", "true");
     passwordModal.style.display = "none";
+    errorMsg.innerText = "";
     updateEditUI();
-  } else errorMsg.innerText = "รหัสผ่านไม่ถูกต้อง";
-};
+  } else {
+    errorMsg.innerText = "รหัสผ่านไม่ถูกต้อง";
+  }
+}
 
-window.updateEditUI = function () {
+function updateEditUI() {
   editArea.style.display = editMode ? "flex" : "none";
   resetBtn.style.display = editMode ? "inline-block" : "none";
   editModeBtn.style.display = editMode ? "none" : "inline-block";
   render();
-};
+}
 
-window.addMember = function () {
+function addMember() {
   const name = nameInput.value.trim();
   if (!name || members.length >= maxMembers) return;
   members.push({ name, count: 0 });
   nameInput.value = "";
   saveData();
-};
+}
 
-window.removeMember = function (i) {
+function removeMember(i) {
   members.splice(i, 1);
   saveData();
-};
+}
 
-window.addCount = function (i) {
+function addCount(i) {
   members[i].count++;
   saveData();
-};
+}
 
-window.resetAll = function () {
+function resetAll() {
   if (!confirm("รีเซ็ตทั้งหมด?")) return;
   members.forEach(m => m.count = 0);
   saveData();
-};
+}
 
-window.saveAndExit = function () {
+function saveAndExit() {
   saveData();
   editMode = false;
   sessionStorage.removeItem("editMode");
   updateEditUI();
-};
+}
 
 function render() {
   tableBody.innerHTML = "";
@@ -197,6 +200,15 @@ function render() {
   });
   counter.innerText = `สมาชิก ${members.length} / ${maxMembers}`;
 }
+
+// expose functions for HTML
+window.openModal = openModal;
+window.confirmPassword = confirmPassword;
+window.addMember = addMember;
+window.removeMember = removeMember;
+window.addCount = addCount;
+window.resetAll = resetAll;
+window.saveAndExit = saveAndExit;
 
 editMode = sessionStorage.getItem("editMode") === "true";
 updateEditUI();
