@@ -102,10 +102,10 @@ input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
 </div>
 
 <script type="module">
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-// ================= Firebase Config =================
 const firebaseConfig = {
   apiKey: "AIzaSyDsM9ByXHwfxhAG8lBfRKiHSGuxwSiAdls",
   authDomain: "jaturathep-55793.firebaseapp.com",
@@ -116,29 +116,22 @@ const firebaseConfig = {
   appId: "1:681766321980:web:cea8b2eee2e3196f10e839"
 };
 
-// ================= Init Firebase =================
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dataRef = ref(db, "members");
 
-// ================= App State =================
 const PASSWORD = "jtrt99";
 const maxMembers = 30;
 let members = [];
 let editMode = false;
 
-// ================= Realtime Load =================
+// โหลดข้อมูลเรียลไทม์
 onValue(dataRef, (snapshot) => {
   members = snapshot.val() || [];
   render();
 });
 
-// ================= Functions =================
-window.saveData = function () {
-  if (!editMode) return;
-  set(dataRef, members);
-};
-
+// ===== expose functions =====
 window.openModal = function () {
   passwordModal.style.display = "flex";
 };
@@ -193,6 +186,11 @@ window.saveAndExit = function () {
   updateEditUI();
 };
 
+function saveData() {
+  if (!editMode) return;
+  set(dataRef, members);
+}
+
 function render() {
   tableBody.innerHTML = "";
   members.forEach((m, i) => {
@@ -200,18 +198,22 @@ function render() {
       <tr>
         <td>${m.name}</td>
         <td>${m.count}</td>
-        <td>${editMode
-          ? `<button class='add-btn' onclick='addCount(${i})'>+</button> <button class='delete-btn' onclick='removeMember(${i})'>ลบ</button>`
-          : "-"}</td>
+        <td>
+          ${editMode
+            ? `<button class="add-btn" onclick="addCount(${i})">+</button>
+               <button class="delete-btn" onclick="removeMember(${i})">ลบ</button>`
+            : "-"}
+        </td>
       </tr>`;
   });
   counter.innerText = `สมาชิก ${members.length} / ${maxMembers}`;
 }
 
-// ================= Init =================
+// init
 editMode = sessionStorage.getItem("editMode") === "true";
 updateEditUI();
 </script>
 
 </body>
 </html>
+
