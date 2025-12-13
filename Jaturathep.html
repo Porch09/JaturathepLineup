@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
-<title>Jaturathep</title>
+<title>Jaturathep Lineup</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
@@ -105,6 +105,7 @@ input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
+// ================= Firebase Config =================
 const firebaseConfig = {
   apiKey: "AIzaSyDsM9ByXHwfxhAG8lBfRKiHSGuxwSiAdls",
   authDomain: "jaturathep-55793.firebaseapp.com",
@@ -115,30 +116,34 @@ const firebaseConfig = {
   appId: "1:681766321980:web:cea8b2eee2e3196f10e839"
 };
 
+// ================= Init Firebase =================
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dataRef = ref(db, "members");
 
+// ================= App State =================
 const PASSWORD = "jtrt99";
 const maxMembers = 30;
 let members = [];
 let editMode = false;
 
+// ================= Realtime Load =================
 onValue(dataRef, (snapshot) => {
   members = snapshot.val() || [];
   render();
 });
 
-function saveData() {
+// ================= Functions =================
+window.saveData = function () {
   if (!editMode) return;
   set(dataRef, members);
-}
+};
 
-function openModal() {
+window.openModal = function () {
   passwordModal.style.display = "flex";
-}
+};
 
-function confirmPassword() {
+window.confirmPassword = function () {
   if (passwordInput.value === PASSWORD) {
     editMode = true;
     sessionStorage.setItem("editMode", "true");
@@ -148,45 +153,45 @@ function confirmPassword() {
   } else {
     errorMsg.innerText = "รหัสผ่านไม่ถูกต้อง";
   }
-}
+};
 
-function updateEditUI() {
+window.updateEditUI = function () {
   editArea.style.display = editMode ? "flex" : "none";
   resetBtn.style.display = editMode ? "inline-block" : "none";
   editModeBtn.style.display = editMode ? "none" : "inline-block";
   render();
-}
+};
 
-function addMember() {
+window.addMember = function () {
   const name = nameInput.value.trim();
   if (!name || members.length >= maxMembers) return;
   members.push({ name, count: 0 });
   nameInput.value = "";
   saveData();
-}
+};
 
-function removeMember(i) {
+window.removeMember = function (i) {
   members.splice(i, 1);
   saveData();
-}
+};
 
-function addCount(i) {
+window.addCount = function (i) {
   members[i].count++;
   saveData();
-}
+};
 
-function resetAll() {
+window.resetAll = function () {
   if (!confirm("รีเซ็ตทั้งหมด?")) return;
   members.forEach(m => m.count = 0);
   saveData();
-}
+};
 
-function saveAndExit() {
+window.saveAndExit = function () {
   saveData();
   editMode = false;
   sessionStorage.removeItem("editMode");
   updateEditUI();
-}
+};
 
 function render() {
   tableBody.innerHTML = "";
@@ -195,21 +200,15 @@ function render() {
       <tr>
         <td>${m.name}</td>
         <td>${m.count}</td>
-        <td>${editMode ? `<button class='add-btn' onclick='addCount(${i})'>+</button> <button class='delete-btn' onclick='removeMember(${i})'>ลบ</button>` : "-"}</td>
+        <td>${editMode
+          ? `<button class='add-btn' onclick='addCount(${i})'>+</button> <button class='delete-btn' onclick='removeMember(${i})'>ลบ</button>`
+          : "-"}</td>
       </tr>`;
   });
   counter.innerText = `สมาชิก ${members.length} / ${maxMembers}`;
 }
 
-// expose functions for HTML
-window.openModal = openModal;
-window.confirmPassword = confirmPassword;
-window.addMember = addMember;
-window.removeMember = removeMember;
-window.addCount = addCount;
-window.resetAll = resetAll;
-window.saveAndExit = saveAndExit;
-
+// ================= Init =================
 editMode = sessionStorage.getItem("editMode") === "true";
 updateEditUI();
 </script>
