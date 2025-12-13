@@ -94,7 +94,19 @@ tr:not(:last-child) td{border-bottom:1px solid rgba(255,255,255,.15);}
 
   /* ================= App Logic ================= */
   const maxMembers = 30;
-  const isOwner = location.hash === "#admin";
+  // ===== Owner Password Config =====
+const OWNER_PASSWORD = "1234"; // 🔐 เปลี่ยนรหัสตรงนี้
+
+let isOwner = false;
+if (location.hash === "#admin") {
+  const input = prompt("กรอกรหัสผ่าน Owner:");
+  if (input === OWNER_PASSWORD) {
+    isOwner = true;
+  } else {
+    alert("รหัสผ่านไม่ถูกต้อง");
+    location.hash = "";
+  }
+}
 
   const list = document.getElementById("list");
   const countEl = document.getElementById("count");
