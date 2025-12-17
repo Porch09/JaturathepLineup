@@ -16,7 +16,7 @@ html,body{
 /* ===== BODY ===== */
 body{
   font-family:'Segoe UI',sans-serif;
-  background-image:url('https://images8.alphacoders.com/108/thumb-1920-1080360.png');
+  background-image:url('https://cdnb.artstation.com/p/assets/images/images/018/331/071/large/ryunkyung-oh-1.jpg?1558985328');
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -49,39 +49,29 @@ body::before{
   padding:30px;
   border-radius:18px;
   width:100%;
-  max-width:400px;
+  max-width:380px;
   text-align:center;
   box-shadow:0 10px 25px rgba(0,0,0,.18);
-}
-
-.landing h1{
-  margin-bottom:20px;
 }
 
 .select-btn{
   width:100%;
   padding:18px;
-  font-size:1.2em;
+  font-size:1.3em;
   border:none;
   border-radius:14px;
   cursor:pointer;
   background:#2a9d8f;
   color:#fff;
-  transition:.2s;
-}
-
-.select-btn:hover{
-  transform:scale(1.03);
-  background:#21867a;
 }
 
 /* ===== CONTAINER ===== */
 .container{
-  display:none; /* ซ่อนก่อน */
+  display:none;
   position:relative;
   z-index:1;
   background:#fff;
-  padding:20px;
+  padding:15px;
   border-radius:15px;
   width:100%;
   max-width:780px;
@@ -97,16 +87,16 @@ h1{text-align:center;margin:5px 0 15px}
   justify-content:space-between;
   flex-wrap:wrap;
   gap:6px;
-  margin-bottom:15px;
+  margin-bottom:10px;
 }
 
 /* ===== BUTTON ===== */
 button{
-  padding:6px 10px;
+  padding:6px 8px;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
   cursor:pointer;
-  font-size:.85em;
+  font-size:.8em;
 }
 .edit-btn{background:#fc6464;color:#fff}
 .reset-btn{background:#e63946;color:#fff}
@@ -114,23 +104,19 @@ button{
 .sub-btn{background:#6c757d;color:#fff}
 .delete-btn{background:#000;color:#fff}
 
-/* ===== TABLE ===== */
-.table-wrap{
-  width:100%;
-  overflow-x:auto;
-}
-
+/* ===== TABLE (ล็อคกลาง) ===== */
 table{
   width:100%;
-  min-width:600px;
   border-collapse:collapse;
+  table-layout:fixed;   /* 🔒 ล็อคไม่ให้ดันข้าง */
 }
 
 th,td{
-  padding:6px;
+  padding:6px 4px;
   text-align:center;
   border-bottom:1px solid #ddd;
-  font-size:.85em;
+  font-size:.8em;
+  word-wrap:break-word;
 }
 
 th{background:#f1f1f1}
@@ -144,7 +130,7 @@ th{background:#f1f1f1}
 }
 
 input{
-  padding:8px;
+  padding:7px;
   border-radius:6px;
   border:1px solid #ccc;
   flex:1;
@@ -184,53 +170,51 @@ body.dark td{border-bottom:1px solid #444}
 body.dark input{
   background:#222;color:#fff;border:1px solid #555;
 }
+
+/* ===== MOBILE FIX ===== */
+@media (max-width:768px){
+  th,td{font-size:.75em}
+
+  /* ปุ่ม + - เรียงแนวตั้ง */
+  td button{
+    display:block;
+    width:100%;
+    margin:2px 0;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<!-- ===== LANDING PAGE ===== -->
+<!-- ===== LANDING ===== -->
 <div class="center" id="landingPage">
   <div class="landing">
-    <h1>เลือกเมนู</h1>
-    <button class="select-btn" id="enterBtn">จุติ 2ช</button>
+    <button class="select-btn" id="enterBtn">จุติ</button>
   </div>
 </div>
 
-<!-- ===== MAIN PAGE ===== -->
+<!-- ===== MAIN ===== -->
 <div class="container" id="mainPage">
   <h1>Jaturathep</h1>
 
   <div class="top-bar">
     <div id="counter">สมาชิก 0 / 30</div>
     <div>
-      <button class="sub-btn" id="darkModeBtn">🌙 Dark</button>
       <button class="edit-btn" id="editModeBtn">Tools</button>
       <button class="reset-btn" id="resetBtn" style="display:none">รีเซ็ต</button>
     </div>
   </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead id="thead"></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+  <table>
+    <thead id="thead"></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
 
   <div class="edit-area" id="editArea">
     <input id="nameInput" placeholder="กรอกชื่อ">
     <button class="add-btn" id="addBtn">เพิ่ม</button>
-    <button class="add-btn" style="background:#457b9d" id="saveBtn">บันทึก</button>
-  </div>
-</div>
-
-<!-- PASSWORD MODAL -->
-<div class="modal" id="passwordModal">
-  <div class="modal-content">
-    <h3>ใส่รหัสผ่าน</h3>
-    <input type="password" id="passwordInput">
-    <div class="error" id="errorMsg"></div>
-    <button class="add-btn" id="confirmBtn">ยืนยัน</button>
+    <button class="add-btn" id="saveBtn">บันทึก</button>
   </div>
 </div>
 
@@ -238,50 +222,29 @@ body.dark input{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-/* ===== LANDING ===== */
-const landing=document.getElementById("landingPage");
-const main=document.getElementById("mainPage");
-
-document.getElementById("enterBtn").onclick=()=>{
-  landing.style.display="none";
-  main.style.display="block";
+/* LANDING */
+enterBtn.onclick=()=>{
+  landingPage.style.display="none";
+  mainPage.style.display="block";
 };
 
-/* ===== FIREBASE ===== */
-const firebaseConfig={
+/* FIREBASE */
+const app=initializeApp({
   apiKey:"AIzaSyDsM9ByXHwfxhAG8lBfRKiHSGuxwSiAdls",
-  authDomain:"jaturathep-55793.firebaseapp.com",
-  databaseURL:"https://jaturathep-55793-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"jaturathep-55793",
-  storageBucket:"jaturathep-55793.firebasestorage.app",
-  messagingSenderId:"681766321980",
-  appId:"1:681766321980:web:cea8b2eee2e3196f10e839"
-};
-
-const app=initializeApp(firebaseConfig);
+  databaseURL:"https://jaturathep-55793-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
 const db=getDatabase(app);
 const dbRef=ref(db,"jaturathep");
 
-const PASSWORD="jtrt99";
-const maxMembers=30;
 let members=[],editMode=false;
-
-/* ELEMENTS */
-const counter=document.getElementById("counter");
-const tableBody=document.getElementById("tableBody");
-const thead=document.getElementById("thead");
-const editArea=document.getElementById("editArea");
-const resetBtn=document.getElementById("resetBtn");
-const editModeBtn=document.getElementById("editModeBtn");
-const nameInput=document.getElementById("nameInput");
+const maxMembers=30;
 
 /* REALTIME */
-onValue(dbRef,snap=>{
-  members=snap.val()||[];
+onValue(dbRef,s=>{
+  members=s.val()||[];
   render();
 });
 
-/* RENDER */
 function render(){
   tableBody.innerHTML="";
   if(editMode){
@@ -301,7 +264,7 @@ function render(){
       </tr>`;
     });
   }else{
-    thead.innerHTML=`<tr><th>ชื่อ</th><th>จำนวน</th></tr>`;
+    thead.innerHTML=`<tr><th>ชื่อ</th><th>รวม</th></tr>`;
     members.forEach(m=>{
       const sum=(m.tao||0)+(m.kyle||0)+(m.yeonhee||0)+(m.karma||0);
       tableBody.innerHTML+=`<tr><td>${m.name}</td><td>${sum}</td></tr>`;
@@ -315,7 +278,7 @@ window.chg=(i,k,v)=>{
   set(dbRef,members);
 };
 window.delMember=i=>{
-  if(confirm("ลบรายชื่อนี้?")){
+  if(confirm("ลบรายชื่อ?")){
     members.splice(i,1);
     set(dbRef,members);
   }
