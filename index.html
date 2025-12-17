@@ -6,9 +6,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* ===== BASE ===== */
 body{
   font-family:'Segoe UI',sans-serif;
-  background:linear-gradient(135deg,#74ebd5,#acb6e5);
+  background-image:url('https://images.alphacoders.com/873/873497.jpg');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-attachment:fixed;
   min-height:100vh;
   display:flex;
   justify-content:center;
@@ -16,13 +21,15 @@ body{
   margin:0;
   padding:10px;
 }
+
 body::before{
   content:"";
   position:fixed;
   inset:0;
-  background:linear-gradient(to bottom,rgba(0,0,0,.45),rgba(0,0,0,.2),rgba(0,0,0,.45));
+  background:rgba(0,0,0,.35);
   z-index:0;
 }
+
 .container{
   position:relative;
   z-index:1;
@@ -31,10 +38,19 @@ body::before{
   border-radius:15px;
   width:100%;
   max-width:780px;
-  box-shadow:0 10px 25px rgba(0,0,0,.2);
+  box-shadow:0 10px 25px rgba(0,0,0,.25);
 }
-h1{text-align:center;font-size:1.8em}
-.top-bar{display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:15px}
+
+h1{text-align:center;font-size:1.8em;margin:5px 0 15px}
+
+.top-bar{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:15px;
+}
+
 button{
   padding:6px 10px;
   border:none;
@@ -42,11 +58,13 @@ button{
   cursor:pointer;
   font-size:.85em
 }
+
 .edit-btn{background:#fc6464;color:#fff}
 .reset-btn{background:#e63946;color:#fff}
 .add-btn{background:#2a9d8f;color:#fff}
 .sub-btn{background:#6c757d;color:#fff}
 .delete-btn{background:#000;color:#fff}
+
 table{width:100%;border-collapse:collapse}
 th,td{
   padding:6px;
@@ -55,18 +73,22 @@ th,td{
   font-size:.85em
 }
 th{background:#f1f1f1}
+
 .edit-area{
   margin-top:10px;
   display:none;
   gap:5px;
   flex-wrap:wrap
 }
+
 input{
   padding:8px;
   border-radius:6px;
   border:1px solid #ccc;
   flex:1
 }
+
+/* ===== MODAL ===== */
 .modal{
   position:fixed;
   inset:0;
@@ -76,6 +98,7 @@ input{
   align-items:center;
   z-index:10
 }
+
 .modal-content{
   background:#fff;
   padding:20px;
@@ -84,7 +107,31 @@ input{
   max-width:300px;
   text-align:center
 }
+
 .error{color:red;font-size:.85em}
+
+/* ===== DARK MODE ===== */
+body.dark::before{background:rgba(0,0,0,.65)}
+
+body.dark .container{
+  background:rgba(20,20,20,.9);
+  color:#eee;
+}
+
+body.dark th{
+  background:#2a2a2a;
+  color:#fff;
+}
+
+body.dark td{
+  border-bottom:1px solid #444;
+}
+
+body.dark input{
+  background:#222;
+  color:#fff;
+  border:1px solid #555;
+}
 </style>
 </head>
 
@@ -93,9 +140,12 @@ input{
   <h1>Jaturathep</h1>
 
   <div class="top-bar">
-    <div id="counter">สมาชิก 0 / 30</div>
-    <button class="edit-btn" id="editModeBtn">Tools</button>
-    <button class="reset-btn" id="resetBtn" style="display:none">รีเซ็ต</button>
+    <div id="counter">Member 0 / 30</div>
+    <div>
+      <button class="sub-btn" id="darkModeBtn">🌙 Dark</button>
+      <button class="edit-btn" id="editModeBtn">Tools</button>
+      <button class="reset-btn" id="resetBtn" style="display:none">รีเซ็ต</button>
+    </div>
   </div>
 
   <table>
@@ -124,7 +174,7 @@ input{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-/* Firebase */
+/* FIREBASE */
 const firebaseConfig={
   apiKey:"AIzaSyDsM9ByXHwfxhAG8lBfRKiHSGuxwSiAdls",
   authDomain:"jaturathep-55793.firebaseapp.com",
@@ -184,10 +234,7 @@ function render(){
         <th>ลบ</th>
       </tr>`;
     members.forEach((m,i)=>{
-      m.tao ??= 0;
-      m.kyle ??= 0;
-      m.yeonhee ??= 0;
-      m.karma ??= 0;
+      m.tao ??=0; m.kyle ??=0; m.yeonhee ??=0; m.karma ??=0;
       tableBody.innerHTML+=`
       <tr>
         <td>${m.name}</td>
@@ -196,30 +243,18 @@ function render(){
             <button class="sub-btn" onclick="chg(${i},'${k}',-1)">−</button>
             ${m[k]}
             <button class="add-btn" onclick="chg(${i},'${k}',1)">+</button>
-          </td>
-        `).join("")}
-        <td>
-          <button class="delete-btn" onclick="delMember(${i})">ลบ</button>
-        </td>
+          </td>`).join("")}
+        <td><button class="delete-btn" onclick="delMember(${i})">ลบ</button></td>
       </tr>`;
     });
   }else{
-    thead.innerHTML=`
-      <tr>
-        <th>ชื่อ</th>
-        <th>จำนวน</th>
-      </tr>`;
+    thead.innerHTML=`<tr><th>ชื่อ</th><th>จำนวน</th></tr>`;
     members.forEach(m=>{
       const sum=(m.tao||0)+(m.kyle||0)+(m.yeonhee||0)+(m.karma||0);
-      tableBody.innerHTML+=`
-        <tr>
-          <td>${m.name}</td>
-          <td>${sum}</td>
-        </tr>`;
+      tableBody.innerHTML+=`<tr><td>${m.name}</td><td>${sum}</td></tr>`;
     });
   }
-
-  counter.innerText=`สมาชิก ${members.length} / ${maxMembers}`;
+  counter.innerText=`Member ${members.length} / ${maxMembers}`;
 }
 
 /* ACTIONS */
@@ -248,9 +283,7 @@ confirmBtn.onclick=()=>{
     resetBtn.style.display="inline-block";
     editModeBtn.style.display="none";
     render();
-  }else{
-    errorMsg.innerText="รหัสผ่านไม่ถูกต้อง";
-  }
+  }else errorMsg.innerText="รหัสผ่านไม่ถูกต้อง";
 };
 
 addBtn.onclick=()=>{
@@ -271,11 +304,22 @@ saveBtn.onclick=()=>{
 
 resetBtn.onclick=()=>{
   if(confirm("รีเซ็ตทั้งหมด?")){
-    members.forEach(m=>{
-      m.tao=0;m.kyle=0;m.yeonhee=0;m.karma=0;
-    });
+    members.forEach(m=>m.tao=m.kyle=m.yeonhee=m.karma=0);
     save();
   }
+};
+
+/* DARK MODE */
+const darkBtn=document.getElementById("darkModeBtn");
+if(localStorage.getItem("dark")==="1"){
+  document.body.classList.add("dark");
+  darkBtn.innerText="☀️ Light";
+}
+darkBtn.onclick=()=>{
+  document.body.classList.toggle("dark");
+  const d=document.body.classList.contains("dark");
+  darkBtn.innerText=d?"☀️ Light":"🌙 Dark";
+  localStorage.setItem("dark",d?"1":"0");
 };
 </script>
 </body>
