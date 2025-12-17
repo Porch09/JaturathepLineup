@@ -22,18 +22,19 @@ body{
   padding:10px;
 }
 
+/* overlay เบาบาง */
 body::before{
   content:"";
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.35);
+  background:rgba(0,0,0,.12); /* เบามาก ไม่เทา */
   z-index:0;
 }
 
 .container{
   position:relative;
   z-index:1;
-  background:#fff;
+  background:#ffffff;
   padding:20px;
   border-radius:15px;
   width:100%;
@@ -41,7 +42,11 @@ body::before{
   box-shadow:0 10px 25px rgba(0,0,0,.25);
 }
 
-h1{text-align:center;font-size:1.8em;margin:5px 0 15px}
+h1{
+  text-align:center;
+  font-size:1.8em;
+  margin:5px 0 15px
+}
 
 .top-bar{
   display:flex;
@@ -92,7 +97,7 @@ input{
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.5);
+  background:rgba(0,0,0,.45);
   display:none;
   justify-content:center;
   align-items:center;
@@ -108,13 +113,18 @@ input{
   text-align:center
 }
 
-.error{color:red;font-size:.85em}
+.error{
+  color:red;
+  font-size:.85em
+}
 
 /* ===== DARK MODE ===== */
-body.dark::before{background:rgba(0,0,0,.65)}
+body.dark::before{
+  background:rgba(0,0,0,.45); /* dark เท่านั้นที่เข้ม */
+}
 
 body.dark .container{
-  background:rgba(20,20,20,.9);
+  background:rgba(20,20,20,.92);
   color:#eee;
 }
 
@@ -140,7 +150,7 @@ body.dark input{
   <h1>Jaturathep</h1>
 
   <div class="top-bar">
-    <div id="counter">Member 0 / 30</div>
+    <div id="counter">สมาชิก 0 / 30</div>
     <div>
       <button class="sub-btn" id="darkModeBtn">🌙 Dark</button>
       <button class="edit-btn" id="editModeBtn">Tools</button>
@@ -254,7 +264,7 @@ function render(){
       tableBody.innerHTML+=`<tr><td>${m.name}</td><td>${sum}</td></tr>`;
     });
   }
-  counter.innerText=`Member ${members.length} / ${maxMembers}`;
+  counter.innerText=`สมาชิก ${members.length} / ${maxMembers}`;
 }
 
 /* ACTIONS */
